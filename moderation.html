@@ -427,7 +427,7 @@
     getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged
   } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
   import {
-    getFirestore, collection, query, where, orderBy, onSnapshot
+    getFirestore
   } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
   import {
     getFunctions, httpsCallable
@@ -444,20 +444,19 @@
     storageBucket: "nail-nook.firebasestorage.app",
     messagingSenderId: "143142869967",
     appId: "1:143142869967:web:28823ad3f100c7396090ba"
-  };
+};
 
   const app = initializeApp(firebaseConfig);
   const auth = getAuth(app);
-  const db = getFirestore(app);
   const functions = getFunctions(app, "us-east1");
 
   const approveFn = httpsCallable(functions, "approveCommunityPhoto");
   const rejectFn = httpsCallable(functions, "rejectCommunityPhoto");
+  const getQueueFn = httpsCallable(functions, "getPendingQueue");
 
   const appEl = document.getElementById("app");
   const toastEl = document.getElementById("toast");
 
-  let unsubscribeQueue = null;
   let queueItems = [];
   let actingOnId = null; // prevents double taps while a request is in flight
 
@@ -608,6 +607,7 @@
         : "Something went wrong. Try again.");
     } finally {
       actingOnId = null;
+      loadQueue();
     }
   }
 
@@ -620,35 +620,42 @@
     }
   }
 
-  function startQueueListener() {
-    if (unsubscribeQueue) unsubscribeQueue();
-    renderLoading();
+  let pollTimer = null;
 
-    const q = query(
-      collection(db, "moderationQueue"),
-      where("status", "==", "pending"),
-      orderBy("createdAt", "asc")
-    );
-
-    unsubscribeQueue = onSnapshot(q, (snapshot) => {
-      queueItems = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
+  async function loadQueue() {
+    try {
+      const result = await getQueueFn({});
+      queueItems = result.data.items.map(item => ({
+        ...item,
+        createdAt: item.createdAt ? { toDate: () => new Date(item.createdAt) } : null
+      }));
       render();
-    }, (err) => {
-      console.error("Queue listener error:", err);
+    } catch (err) {
+      console.error("Queue load error:", err);
       appEl.innerHTML = `
-        <div class="empty-wrap">
-          <p class="empty-title">Couldn't load the queue</p>
-          <p class="empty-sub">${err.message || "Check your connection and try refreshing."}</p>
+        <div class="content">
+          <div class="empty-wrap">
+            <p class="empty-title">Couldn't load the queue</p>
+            <p class="empty-sub">${err.message || "Check your connection and try refreshing."}</p>
+          </div>
         </div>
       `;
-    });
+    }
+  }
+
+  function startQueueListener() {
+    if (pollTimer) clearInterval(pollTimer);
+    renderLoading();
+    loadQueue();
+    // Refresh every 15 seconds so new submissions appear without manual reload
+    pollTimer = setInterval(loadQueue, 15000);
   }
 
   onAuthStateChanged(auth, (user) => {
     if (user) {
       startQueueListener();
     } else {
-      if (unsubscribeQueue) { unsubscribeQueue(); unsubscribeQueue = null; }
+      if (pollTimer) { clearInterval(pollTimer); pollTimer = null; }
       renderSignIn();
     }
   });
