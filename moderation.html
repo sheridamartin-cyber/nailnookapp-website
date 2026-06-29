@@ -1,0 +1,658 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+<title>Nail Nook — Moderation</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet" />
+
+<style>
+  :root {
+    --indigo: #3533CD;
+    --indigo-dark: #2826A3;
+    --lavender: #7C7AE8;
+    --lavender-soft: #ECEBFB;
+    --blush: #E8A4C8;
+    --blush-soft: #FBEDF4;
+    --surface: #E8E8F0;
+    --bg: #FAFAFA;
+    --text-dark: #21204D;
+    --text-muted: #6E6D96;
+    --danger: #C0455B;
+    --danger-soft: #FCEAEE;
+    --success: #1F8A5C;
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    font-family: 'Poppins', sans-serif;
+    background: var(--bg);
+    color: var(--text-dark);
+    min-height: 100vh;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  .app {
+    max-width: 480px;
+    margin: 0 auto;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    padding: env(safe-area-inset-top, 0) 0 env(safe-area-inset-bottom, 0) 0;
+  }
+
+  /* ---------- Header ---------- */
+  .header {
+    background: var(--indigo);
+    color: white;
+    padding: 24px 20px 20px;
+    border-radius: 0 0 24px 24px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .header::after {
+    content: "";
+    position: absolute;
+    top: -40px;
+    right: -40px;
+    width: 140px;
+    height: 140px;
+    border-radius: 50%;
+    background: var(--lavender);
+    opacity: 0.35;
+  }
+
+  .header-top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    position: relative;
+    z-index: 1;
+  }
+
+  .brand {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .brand-badge {
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    background: white;
+    color: var(--indigo);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 14px;
+    flex-shrink: 0;
+  }
+
+  .brand-name {
+    font-weight: 600;
+    font-size: 15px;
+    letter-spacing: 0.2px;
+  }
+
+  .brand-tagline {
+    font-size: 11px;
+    opacity: 0.75;
+    font-weight: 400;
+    margin-top: 1px;
+  }
+
+  .sign-out-btn {
+    background: rgba(255,255,255,0.15);
+    border: none;
+    color: white;
+    font-family: 'Poppins', sans-serif;
+    font-size: 12px;
+    font-weight: 500;
+    padding: 6px 12px;
+    border-radius: 20px;
+    cursor: pointer;
+  }
+
+  .queue-count {
+    margin-top: 22px;
+    position: relative;
+    z-index: 1;
+  }
+
+  .queue-count-number {
+    font-size: 38px;
+    font-weight: 700;
+    line-height: 1;
+  }
+
+  .queue-count-label {
+    font-size: 13px;
+    opacity: 0.85;
+    margin-top: 4px;
+    font-weight: 400;
+  }
+
+  /* ---------- Sign in screen ---------- */
+  .signin-wrap {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 40px 28px;
+    text-align: center;
+    gap: 20px;
+  }
+
+  .signin-badge {
+    width: 72px;
+    height: 72px;
+    border-radius: 50%;
+    background: var(--indigo);
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 26px;
+    box-shadow: 0 8px 24px rgba(53, 51, 205, 0.25);
+  }
+
+  .signin-title {
+    font-size: 19px;
+    font-weight: 600;
+    margin: 0;
+  }
+
+  .signin-sub {
+    font-size: 14px;
+    color: var(--text-muted);
+    margin: 0;
+    max-width: 280px;
+    line-height: 1.5;
+  }
+
+  .google-btn {
+    margin-top: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    background: white;
+    border: 1.5px solid var(--surface);
+    color: var(--text-dark);
+    font-family: 'Poppins', sans-serif;
+    font-weight: 500;
+    font-size: 15px;
+    padding: 13px 28px;
+    border-radius: 14px;
+    cursor: pointer;
+    box-shadow: 0 2px 10px rgba(33, 32, 77, 0.06);
+  }
+
+  .google-btn:active { transform: scale(0.98); }
+
+  .signin-error {
+    color: var(--danger);
+    font-size: 13px;
+    max-width: 280px;
+    line-height: 1.5;
+  }
+
+  /* ---------- Main content ---------- */
+  .content {
+    flex: 1;
+    padding: 24px 20px 40px;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .loading-wrap {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 14px;
+    color: var(--text-muted);
+    font-size: 14px;
+  }
+
+  .spinner {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    border: 3px solid var(--surface);
+    border-top-color: var(--indigo);
+    animation: spin 0.8s linear infinite;
+  }
+
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* ---------- Empty state ---------- */
+  .empty-wrap {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    gap: 16px;
+    padding: 40px 20px;
+  }
+
+  .empty-icon {
+    width: 88px;
+    height: 88px;
+    border-radius: 50%;
+    background: var(--blush-soft);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 38px;
+  }
+
+  .empty-title {
+    font-size: 19px;
+    font-weight: 600;
+    margin: 0;
+  }
+
+  .empty-sub {
+    font-size: 14px;
+    color: var(--text-muted);
+    margin: 0;
+    max-width: 260px;
+    line-height: 1.5;
+  }
+
+  /* ---------- Photo card ---------- */
+  .card {
+    background: white;
+    border-radius: 22px;
+    overflow: hidden;
+    box-shadow: 0 4px 24px rgba(33, 32, 77, 0.08);
+    margin-bottom: 18px;
+  }
+
+  .card-photo-wrap {
+    width: 100%;
+    aspect-ratio: 1 / 1;
+    background: var(--surface);
+    position: relative;
+    overflow: hidden;
+  }
+
+  .card-photo-wrap img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+  }
+
+  .card-body {
+    padding: 16px 18px 18px;
+  }
+
+  .card-polish-name {
+    font-size: 17px;
+    font-weight: 600;
+    margin: 0 0 2px;
+  }
+
+  .card-brand {
+    font-size: 13px;
+    color: var(--lavender);
+    font-weight: 500;
+    margin: 0 0 12px;
+  }
+
+  .card-meta {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    font-size: 12.5px;
+    color: var(--text-muted);
+    border-top: 1px solid var(--surface);
+    padding-top: 10px;
+  }
+
+  .card-meta-row {
+    display: flex;
+    justify-content: space-between;
+  }
+
+  .card-meta-label { color: var(--text-muted); }
+  .card-meta-value { color: var(--text-dark); font-weight: 500; }
+
+  .card-actions {
+    display: flex;
+    gap: 10px;
+    padding: 0 18px 18px;
+  }
+
+  .action-btn {
+    flex: 1;
+    border: none;
+    border-radius: 14px;
+    padding: 14px 0;
+    font-family: 'Poppins', sans-serif;
+    font-weight: 600;
+    font-size: 14.5px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    transition: transform 0.08s ease;
+  }
+
+  .action-btn:active { transform: scale(0.96); }
+  .action-btn:disabled { opacity: 0.5; cursor: default; }
+
+  .approve-btn {
+    background: var(--indigo);
+    color: white;
+  }
+
+  .reject-btn {
+    background: var(--danger-soft);
+    color: var(--danger);
+  }
+
+  .queue-position {
+    font-size: 12px;
+    color: var(--text-muted);
+    text-align: center;
+    margin-bottom: 14px;
+  }
+
+  /* ---------- Toast ---------- */
+  .toast {
+    position: fixed;
+    bottom: 28px;
+    left: 50%;
+    transform: translateX(-50%) translateY(10px);
+    background: var(--text-dark);
+    color: white;
+    font-size: 13.5px;
+    font-weight: 500;
+    padding: 12px 20px;
+    border-radius: 14px;
+    opacity: 0;
+    transition: opacity 0.25s ease, transform 0.25s ease;
+    pointer-events: none;
+    z-index: 20;
+    max-width: 90%;
+    text-align: center;
+  }
+
+  .toast.show {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
+
+  .sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0,0,0,0);
+  }
+</style>
+</head>
+<body>
+
+<div class="app" id="app">
+  <h1 class="sr-only">Nail Nook community photo moderation queue</h1>
+
+  <div class="loading-wrap" id="initialLoading">
+    <div class="spinner"></div>
+    <span>Loading…</span>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+  import {
+    getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged
+  } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+  import {
+    getFirestore, collection, query, where, orderBy, onSnapshot
+  } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+  import {
+    getFunctions, httpsCallable
+  } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-functions.js";
+
+  // -----------------------------------------------------------------------
+  // CONFIG — fill in from the Nail Nook Firebase project settings
+  // (Project settings -> General -> Your apps -> Web app -> SDK config)
+  // -----------------------------------------------------------------------
+  const firebaseConfig = {
+    apiKey: "AIzaSyDFu3rl7LkRpFQ89HvAUvdo2f1-vl6RSCw",
+    authDomain: "nail-nook.firebaseapp.com",
+    projectId: "nail-nook",
+    storageBucket: "nail-nook.firebasestorage.app",
+    messagingSenderId: "143142869967",
+    appId: "1:143142869967:web:28823ad3f100c7396090ba"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const auth = getAuth(app);
+  const db = getFirestore(app);
+  const functions = getFunctions(app, "us-east1");
+
+  const approveFn = httpsCallable(functions, "approveCommunityPhoto");
+  const rejectFn = httpsCallable(functions, "rejectCommunityPhoto");
+
+  const appEl = document.getElementById("app");
+  const toastEl = document.getElementById("toast");
+
+  let unsubscribeQueue = null;
+  let queueItems = [];
+  let actingOnId = null; // prevents double taps while a request is in flight
+
+  function showToast(message) {
+    toastEl.textContent = message;
+    toastEl.classList.add("show");
+    setTimeout(() => toastEl.classList.remove("show"), 2200);
+  }
+
+  function formatTimestamp(ts) {
+    if (!ts) return "just now";
+    const date = ts.toDate ? ts.toDate() : new Date(ts);
+    return date.toLocaleString(undefined, {
+      month: "short", day: "numeric", hour: "numeric", minute: "2-digit"
+    });
+  }
+
+  function renderSignIn(errorMessage) {
+    appEl.innerHTML = `
+      <div class="signin-wrap">
+        <div class="signin-badge">NN</div>
+        <p class="signin-title">Nail Nook moderation</p>
+        <p class="signin-sub">Sign in with the account approved to review community photos.</p>
+        <button class="google-btn" id="signInBtn">
+          <svg width="18" height="18" viewBox="0 0 18 18"><path fill="#4285F4" d="M17.64 9.2c0-.64-.06-1.25-.16-1.84H9v3.48h4.84a4.14 4.14 0 0 1-1.8 2.72v2.26h2.9A8.78 8.78 0 0 0 17.64 9.2z"/><path fill="#34A853" d="M9 18c2.43 0 4.47-.8 5.96-2.18l-2.9-2.26c-.8.55-1.83.87-3.06.87-2.36 0-4.36-1.6-5.07-3.74H.9v2.33A9 9 0 0 0 9 18z"/><path fill="#FBBC05" d="M3.93 10.69A5.4 5.4 0 0 1 3.65 9c0-.59.1-1.16.28-1.69V4.98H.9A9 9 0 0 0 0 9c0 1.45.35 2.83.9 4.02l3.03-2.33z"/><path fill="#EA4335" d="M9 3.58c1.32 0 2.51.46 3.44 1.35l2.58-2.58A9 9 0 0 0 .9 4.98L3.93 7.3C4.64 5.18 6.64 3.58 9 3.58z"/></svg>
+          Sign in with Google
+        </button>
+        ${errorMessage ? `<p class="signin-error">${errorMessage}</p>` : ""}
+      </div>
+    `;
+    document.getElementById("signInBtn").addEventListener("click", async () => {
+      try {
+        const provider = new GoogleAuthProvider();
+        await signInWithPopup(auth, provider);
+      } catch (err) {
+        console.error(err);
+        renderSignIn("Sign-in didn't go through. Try again.");
+      }
+    });
+  }
+
+  function renderLoading() {
+    appEl.innerHTML = `
+      <div class="loading-wrap">
+        <div class="spinner"></div>
+        <span>Loading queue…</span>
+      </div>
+    `;
+  }
+
+  function renderHeader(count) {
+    return `
+      <div class="header">
+        <div class="header-top">
+          <div class="brand">
+            <div class="brand-badge">NN</div>
+            <div>
+              <div class="brand-name">Nail Nook</div>
+              <div class="brand-tagline">Your collection, elevated.</div>
+            </div>
+          </div>
+          <button class="sign-out-btn" id="signOutBtn">Sign out</button>
+        </div>
+        <div class="queue-count">
+          <div class="queue-count-number">${count}</div>
+          <div class="queue-count-label">${count === 1 ? "photo waiting for review" : "photos waiting for review"}</div>
+        </div>
+      </div>
+    `;
+  }
+
+  function renderEmptyState(count) {
+    return `
+      ${renderHeader(count)}
+      <div class="content">
+        <div class="empty-wrap">
+          <div class="empty-icon">&#10003;</div>
+          <p class="empty-title">Queue's clear</p>
+          <p class="empty-sub">No community photos waiting on you right now. Nice work — check back later.</p>
+        </div>
+      </div>
+    `;
+  }
+
+  function renderQueue(items) {
+    const current = items[0];
+    const remaining = items.length;
+
+    const meta = current.catalogId
+      ? `Polish ID: ${current.catalogId}`
+      : "Polish details unavailable";
+
+    appEl.innerHTML = `
+      ${renderHeader(remaining)}
+      <div class="content">
+        <p class="queue-position">${remaining === 1 ? "Last one" : `${remaining} left after this`}</p>
+        <div class="card">
+          <div class="card-photo-wrap">
+            <img src="${current.photoUrl}" alt="Submitted community photo pending review" loading="eager" />
+          </div>
+          <div class="card-body">
+            <p class="card-polish-name">${current.catalogId || "Unknown polish"}</p>
+            <div class="card-meta">
+              <div class="card-meta-row">
+                <span class="card-meta-label">Submitted by</span>
+                <span class="card-meta-value">${current.submittedByUserId || "Unknown"}</span>
+              </div>
+              <div class="card-meta-row">
+                <span class="card-meta-label">Submitted</span>
+                <span class="card-meta-value">${formatTimestamp(current.createdAt)}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="card-actions">
+          <button class="action-btn reject-btn" id="rejectBtn" ${actingOnId === current.id ? "disabled" : ""}>
+            Reject
+          </button>
+          <button class="action-btn approve-btn" id="approveBtn" ${actingOnId === current.id ? "disabled" : ""}>
+            Approve
+          </button>
+        </div>
+      </div>
+    `;
+
+    document.getElementById("approveBtn").addEventListener("click", () => handleDecision(current.id, "approve"));
+    document.getElementById("rejectBtn").addEventListener("click", () => handleDecision(current.id, "reject"));
+    document.getElementById("signOutBtn").addEventListener("click", () => signOut(auth));
+  }
+
+  async function handleDecision(queueId, decision) {
+    if (actingOnId) return;
+    actingOnId = queueId;
+    render();
+
+    try {
+      if (decision === "approve") {
+        await approveFn({ queueId });
+        showToast("Approved — now live in the catalog.");
+      } else {
+        await rejectFn({ queueId });
+        showToast("Rejected.");
+      }
+    } catch (err) {
+      console.error(err);
+      showToast(err.message && err.message.includes("already")
+        ? "Already handled — refreshing."
+        : "Something went wrong. Try again.");
+    } finally {
+      actingOnId = null;
+    }
+  }
+
+  function render() {
+    if (queueItems.length === 0) {
+      appEl.innerHTML = renderEmptyState(0);
+      document.getElementById("signOutBtn").addEventListener("click", () => signOut(auth));
+    } else {
+      renderQueue(queueItems);
+    }
+  }
+
+  function startQueueListener() {
+    if (unsubscribeQueue) unsubscribeQueue();
+    renderLoading();
+
+    const q = query(
+      collection(db, "moderationQueue"),
+      where("status", "==", "pending"),
+      orderBy("createdAt", "asc")
+    );
+
+    unsubscribeQueue = onSnapshot(q, (snapshot) => {
+      queueItems = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
+      render();
+    }, (err) => {
+      console.error("Queue listener error:", err);
+      appEl.innerHTML = `
+        <div class="empty-wrap">
+          <p class="empty-title">Couldn't load the queue</p>
+          <p class="empty-sub">${err.message || "Check your connection and try refreshing."}</p>
+        </div>
+      `;
+    });
+  }
+
+  onAuthStateChanged(auth, (user) => {
+    if (user) {
+      startQueueListener();
+    } else {
+      if (unsubscribeQueue) { unsubscribeQueue(); unsubscribeQueue = null; }
+      renderSignIn();
+    }
+  });
+</script>
+
+</body>
+</html>
